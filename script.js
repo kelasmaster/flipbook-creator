@@ -1,51 +1,46 @@
-// Show selected tab
 function showTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.getElementById(tabId + "-tab").classList.add("active");
 }
 
-// Split text into pages
-function splitTextIntoPages(text, charsPerPage = 1000) {
-  const words = text.split(/\s+/);
+function splitTextIntoPages(text, wordsPerPage = 300) {
+  const paragraphs = text.split(/\n\s*\n/);
   let pages = [];
-  let page = "";
+  let currentPage = "";
+  let wordCount = 0;
 
-  for (let word of words) {
-    if ((page + word).length > charsPerPage) {
-      pages.push(page.trim());
-      page = word + " ";
-    } else {
-      page += word + " ";
+  for (let para of paragraphs) {
+    const words = para.trim().split(/\s+/);
+    if (wordCount + words.length > wordsPerPage && currentPage !== "") {
+      pages.push(currentPage.trim());
+      currentPage = "";
+      wordCount = 0;
     }
+    currentPage += para.trim() + "\n\n";
+    wordCount += words.length;
   }
 
-  if (page.length > 0) pages.push(page.trim());
+  if (currentPage.trim()) pages.push(currentPage.trim());
+
   return pages;
 }
 
-// Convert user text to flipbook
 function convertToFlipbook() {
   const text = document.getElementById("user-text").value;
   if (!text.trim()) {
     alert("Please enter some text.");
     return;
   }
-  console.log("Text input received:", text.slice(0, 50) + "...");
-  
   const pages = splitTextIntoPages(text);
-  console.log("Pages created:", pages.length);
-
   renderFlipbook(pages);
 }
-// Process uploaded document (PDF or DOCX)
+
 async function processDocument() {
   const file = document.getElementById("document-file").files[0];
   if (!file) {
     alert("Please select a file.");
     return;
   }
-
-  console.log("Processing file:", file.name);
 
   let text = "";
   if (file.type === "application/pdf") {
@@ -57,12 +52,15 @@ async function processDocument() {
     return;
   }
 
-  console.log("Extracted text:", text.slice(0, 100) + "...");
+  if (!text.trim()) {
+    alert("Could not extract readable text from the file.");
+    return;
+  }
+
   const pages = splitTextIntoPages(text);
   renderFlipbook(pages);
 }
 
-// Extract PDF text using pdf.js (stubbed here)
 async function extractTextFromPDF(file) {
   const reader = new FileReader();
   return new Promise((resolve, reject) => {
@@ -88,7 +86,6 @@ async function extractTextFromPDF(file) {
   });
 }
 
-// Extract DOCX text using mammoth.js (stubbed)
 async function extractTextFromDOCX(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -106,31 +103,28 @@ async function extractTextFromDOCX(file) {
   });
 }
 
-// Render flipbook with Turn.js
 function renderFlipbook(pages) {
   const container = $("#flipbook");
   container.empty();
 
-  console.log("Rendering flipbook with pages:", pages.length);
-
   pages.forEach((page, i) => {
-    $("<div>").addClass("page").html(`<p>${page}</p>`).appendTo(container);
+    $("<div>")
+      .addClass("page")
+      .html(`<p>${page}</p><div class="page-number">${i + 1}</div>`)
+      .appendTo(container);
   });
 
-  // Destroy existing turn.js instance if any
   if (container.turn("size")) {
     container.turn("destroy");
   }
 
-  try {
-    container.turn({
-      width: "100%",
-      height: 500,
-      autoCenter: true,
-      acceleration: true
-    });
-  } catch (e) {
-    console.error("Turn.js error:", e);
-    alert("Failed to initialize flipbook. Check console for details.");
-  }
+  container.turn({
+    width: "100%",
+    height: 500,
+    autoCenter: true,
+    acceleration: true,
+    elevation: 50,
+    gradients: true,
+    duration: 600
+  });
 }
