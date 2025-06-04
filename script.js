@@ -31,13 +31,12 @@ function convertToFlipbook() {
     return;
   }
   console.log("Text input received:", text.slice(0, 50) + "...");
-
+  
   const pages = splitTextIntoPages(text);
   console.log("Pages created:", pages.length);
 
   renderFlipbook(pages);
 }
-
 // Process uploaded document (PDF or DOCX)
 async function processDocument() {
   const file = document.getElementById("document-file").files[0];
@@ -99,18 +98,26 @@ function renderFlipbook(pages) {
   const container = $("#flipbook");
   container.empty();
 
+  console.log("Rendering flipbook with pages:", pages.length);
+
   pages.forEach((page, i) => {
     $("<div>").addClass("page").html(`<p>${page}</p>`).appendTo(container);
   });
 
-  if ($("#flipbook").turn("size")) {
-    $("#flipbook").turn("destroy");
+  // Destroy existing turn.js instance if any
+  if (container.turn("size")) {
+    container.turn("destroy");
   }
 
-  container.turn({
-    width: "100%",
-    height: 500,
-    autoCenter: true,
-    acceleration: true
-  });
+  try {
+    container.turn({
+      width: "100%",
+      height: 500,
+      autoCenter: true,
+      acceleration: true
+    });
+  } catch (e) {
+    console.error("Turn.js error:", e);
+    alert("Failed to initialize flipbook. Check console for details.");
+  }
 }
