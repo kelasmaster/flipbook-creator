@@ -1,0 +1,24 @@
+<div class="container">
+  <h1>FlipBook Creator</h1>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button onclick="showTab('text')">Type Text</button>
+    <button onclick="showTab('upload')">Upload File</button>
+  </div>
+
+  <!-- Tab 1: Text Input -->
+  <div id="text-tab" class="tab-content">
+    <textarea id="user-text" placeholder="Write your content here..."></textarea>
+    <button onclick="convertToFlipbook()">Convert to Flipbook</button>
+  </div>
+
+  <!-- Tab 2: File Upload -->
+  <div id="upload-tab" class="tab-content" style="display:none;">
+    <input type="file" id="document-file" accept=".docx,.pdf">
+    <button onclick="processDocument()">Process Document</button>
+  </div>
+
+  <!-- Flipbook Preview Area -->
+  <div id="flipbook-container"></div>
+</div>
