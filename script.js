@@ -30,7 +30,11 @@ function convertToFlipbook() {
     alert("Please enter some text.");
     return;
   }
+  console.log("Text input received:", text.slice(0, 50) + "...");
+
   const pages = splitTextIntoPages(text);
+  console.log("Pages created:", pages.length);
+
   renderFlipbook(pages);
 }
 
@@ -42,6 +46,8 @@ async function processDocument() {
     return;
   }
 
+  console.log("Processing file:", file.name);
+
   let text = "";
   if (file.type === "application/pdf") {
     text = await extractTextFromPDF(file);
@@ -52,11 +58,7 @@ async function processDocument() {
     return;
   }
 
-  if (!text.trim()) {
-    alert("Could not extract readable text from the file.");
-    return;
-  }
-
+  console.log("Extracted text:", text.slice(0, 100) + "...");
   const pages = splitTextIntoPages(text);
   renderFlipbook(pages);
 }
