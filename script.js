@@ -64,29 +64,42 @@ async function processDocument() {
 
 // Extract PDF text using pdf.js (stubbed here)
 async function extractTextFromPDF(file) {
-  // In real use, use pdf.js to parse the PDF
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve("Extracted text from PDF will appear here in a real implementation.");
+  const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    reader.onload = async function () {
+      try {
+        const typedArray = new Uint8Array(reader.result);
+        const pdfDoc = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+        let fullText = '';
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const tokenizedText = await page.getTextContent();
+          const pageText = tokenizedText.items.map(token => token.str).join(' ');
+          fullText += pageText + '\n\n';
+        }
+        resolve(fullText);
+      } catch (err) {
+        console.error("Error reading PDF", err);
+        reject("Error extracting text from PDF.");
+      }
     };
-    reader.readAsDataURL(file);
+    reader.readAsArrayBuffer(file);
   });
 }
 
 // Extract DOCX text using mammoth.js (stubbed)
 async function extractTextFromDOCX(file) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
-      const arrayBuffer = e.target.result;
-
-      mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+      mammoth.extractRawText({ arrayBuffer: e.target.result })
         .then(result => {
           resolve(result.value); // raw text
         })
-        .catch(() => {
-          resolve("Error extracting DOCX text.");
+        .catch(err => {
+          console.error("Error extracting DOCX", err);
+          reject("Error extracting text from DOCX.");
         });
     };
     reader.readAsArrayBuffer(file);
